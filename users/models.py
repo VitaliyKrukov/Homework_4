@@ -1,12 +1,13 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+from courses.models import Course, Lesson
+
 
 class CustomUserManager(BaseUserManager):
-    """Кастомный менеджер для модели пользователя с email в качестве идентификатора"""
 
     def create_user(self, email, password=None, **extra_fields):
-        """Создает и возвращает пользователя с email и паролем"""
+
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
@@ -16,7 +17,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        """Создает и возвращает суперпользователя"""
+
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -30,7 +31,6 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    """Кастомная модель пользователя с авторизацией по email"""
 
     username = None
     email = models.EmailField(
@@ -71,3 +71,67 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Payment(models.Model):
+
+    CASH = "cash"
+    TRANSFER = "transfer"
+
+    PAYMENT_METHODS = [
+        (CASH, "Наличные"),
+        (TRANSFER, "Перевод на счет"),
+    ]
+
+    user = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="payments",
+        verbose_name="Пользователь",
+    )
+
+    payment_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата оплаты")
+
+    paid_course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
+        verbose_name="Оплаченный курс",
+    )
+
+    paid_lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
+        verbose_name="Оплаченный урок",
+    )
+
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Сумма оплаты"
+    )
+
+    payment_method = models.CharField(
+        max_length=20, choices=PAYMENT_METHODS, verbose_name="Способ оплаты"
+    )
+
+    class Meta:
+        verbose_name = "Платеж"
+        verbose_name_plural = "Платежи"
+        ordering = ["-payment_date"]
+
+    def __str__(self):
+        return f"Платеж {self.user.email} - {self.amount} руб."
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.paid_course and self.paid_lesson:
+            raise ValidationError(
+                "Можно указать только курс ИЛИ урок, но не оба одновременно."
+            )
+        if not self.paid_course and not self.paid_lesson:
+            raise ValidationError("Необходимо указать либо курс, либо урок.")
