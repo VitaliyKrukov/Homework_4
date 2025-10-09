@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users.apps.UsersConfig",
     "courses",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -113,5 +114,10 @@ if DEBUG:
         "127.0.0.1",
     ]
 
-
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
+    ],
+}
 AUTH_USER_MODEL = "users.CustomUser"
