@@ -19,6 +19,14 @@ class Course(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(
+        "users.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+        help_text="Укажите владельца",
+    )
 
     class Meta:
         verbose_name = "курс"
@@ -65,6 +73,14 @@ class Lesson(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(
+        "users.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+        help_text="Укажите владельца",
+    )
 
     class Meta:
         verbose_name = "урок"
