@@ -14,7 +14,7 @@ from .filters import PaymentFilter
 from .models import Payment
 from .serializers import (PaymentSerializer, StripePaymentCreateSerializer,
                           UserRegisterSerializer)
-from .services.stripe_service import StripeService
+from users.services.users.services.stripe_service import StripeService
 
 User = get_user_model()
 
