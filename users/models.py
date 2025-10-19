@@ -1,13 +1,9 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-from courses.models import Course, Lesson
-
 
 class CustomUserManager(BaseUserManager):
-
     def create_user(self, email, password=None, **extra_fields):
-
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
@@ -17,7 +13,6 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -31,7 +26,6 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-
     username = None
     email = models.EmailField(
         verbose_name="почта",
@@ -60,6 +54,12 @@ class CustomUser(AbstractUser):
         help_text="Загрузите аватар",
     )
 
+    is_moderator = models.BooleanField(
+        default=False,
+        verbose_name="Модератор",
+        help_text="Укажите, является ли пользователь модератором",
+    )
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
@@ -74,13 +74,14 @@ class CustomUser(AbstractUser):
 
 
 class Payment(models.Model):
-
     CASH = "cash"
     TRANSFER = "transfer"
+    STRIPE = "stripe"
 
     PAYMENT_METHODS = [
         (CASH, "Наличные"),
         (TRANSFER, "Перевод на счет"),
+        (STRIPE, "Stripe"),
     ]
 
     user = models.ForeignKey(
@@ -93,7 +94,7 @@ class Payment(models.Model):
     payment_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата оплаты")
 
     paid_course = models.ForeignKey(
-        Course,
+        "courses.Course",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -102,7 +103,7 @@ class Payment(models.Model):
     )
 
     paid_lesson = models.ForeignKey(
-        Lesson,
+        "courses.Lesson",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -116,6 +117,29 @@ class Payment(models.Model):
 
     payment_method = models.CharField(
         max_length=20, choices=PAYMENT_METHODS, verbose_name="Способ оплаты"
+    )
+
+    stripe_session_id = models.TextField(
+        blank=True, null=True, verbose_name="ID сессии Stripe"
+    )
+    stripe_price_id = models.TextField(
+        blank=True, null=True, verbose_name="ID цены в Stripe"
+    )
+
+    payment_link = models.TextField(
+        blank=True, null=True, verbose_name="Ссылка для оплаты"
+    )
+
+    stripe_payment_status = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="Статус платежа Stripe",
+        choices=[
+            ("pending", "Ожидает"),
+            ("paid", "Оплачено"),
+            ("failed", "Неудачно"),
+        ],
     )
 
     class Meta:

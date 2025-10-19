@@ -5,10 +5,12 @@ from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
 from .apps import UsersConfig
-from .views import PaymentViewSet, UserCreateAPIView
+from .views import (PaymentCancelAPIView, PaymentStatusAPIView,
+                    PaymentSuccessAPIView, PaymentViewSet, UserCreateAPIView)
 
 router = DefaultRouter()
 router.register(r"payments", PaymentViewSet, basename="payment")
+
 app_name = UsersConfig.name
 
 urlpatterns = [
@@ -24,4 +26,7 @@ urlpatterns = [
         TokenRefreshView.as_view(permission_classes=(AllowAny,)),
         name="token_refresh",
     ),
+    path("payment/status/", PaymentStatusAPIView.as_view(), name="payment-status"),
+    path("payment/success/", PaymentSuccessAPIView.as_view(), name="payment-success"),
+    path("payment/cancel/", PaymentCancelAPIView.as_view(), name="payment-cancel"),
 ]
