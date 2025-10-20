@@ -9,12 +9,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from courses.models import Course, Lesson
+from users.services.users.services.stripe_service import StripeService
 
 from .filters import PaymentFilter
 from .models import Payment
 from .serializers import (PaymentSerializer, StripePaymentCreateSerializer,
                           UserRegisterSerializer)
-from users.services.users.services.stripe_service import StripeService
 
 User = get_user_model()
 
