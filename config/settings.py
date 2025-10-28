@@ -78,7 +78,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     "drf_yasg",
-    "django_celery_beat",  # Добавляем Celery Beat
+    "django_celery_beat",
     # Ваши приложения
     "users.apps.UsersConfig",
     "courses",
